@@ -1,6 +1,12 @@
-import { describe, it, expect } from "vitest";
-import { EventData } from "./template";
-import { auditMessage, parseAuditMessage, parsePPEvent, ppEvent } from "./pretty";
+import { describe, it, expect } from "vitest"
+
+import {
+	auditMessage,
+	parseAuditMessage,
+	parsePPEvent,
+	ppEvent,
+} from "./pretty"
+import type { EventData } from "./template"
 
 describe("pretty", () => {
 	describe("ppEvent", () => {
@@ -10,10 +16,10 @@ describe("pretty", () => {
 			end: null,
 			location: "Central Park",
 			desc: "Come to Central Park and hang out with us! Bring your own brats.",
-		};
+		}
 
 		it("pretty prints an event", () => {
-			const pp = ppEvent(data);
+			const pp = ppEvent(data)
 			expect(pp).toMatchInlineSnapshot(`
 				"**Name:** Central Park Meetup
 				**Start:** Monday, April 17, 2023 at 12:00 PM MDT (2023-04-17T18:00:00.000Z)
@@ -21,15 +27,15 @@ describe("pretty", () => {
 				**Location:** Central Park
 
 				Come to Central Park and hang out with us! Bring your own brats."
-			`);
-		});
+			`)
+		})
 
 		it("is reversible", () => {
-			const pretty = ppEvent(data);
-			const parsed = parsePPEvent(pretty);
-			expect(parsed).toEqual(data);
-		});
-	});
+			const pretty = ppEvent(data)
+			const parsed = parsePPEvent(pretty)
+			expect(parsed).toEqual(data)
+		})
+	})
 
 	describe("parsePPEvent", () => {
 		it("parses a pretty-printed event", () => {
@@ -43,21 +49,23 @@ describe("pretty", () => {
 **Location:** Central Park
 
 Come to Central Park and hang out with us! Bring your own brats.
-			`.trim();
-			const parsed = parsePPEvent(pretty);
+			`.trim()
+			const parsed = parsePPEvent(pretty)
 			expect(parsed).toEqual({
 				name: "Central Park Meetup",
 				start: "2023-04-17T18:00:00.000Z",
 				end: null,
 				location: "Central Park",
 				desc: "Come to Central Park and hang out with us! Bring your own brats.",
-			});
-		});
-	});
+			})
+		})
+	})
 
 	describe("parseAuditMessage", () => {
 		it("parses the generated audit message", () => {
-			expect(parseAuditMessage(auditMessage("fs0ciety#1337"))).toEqual("fs0ciety#1337");
-		});
-	});
-});
+			expect(parseAuditMessage(auditMessage("fs0ciety#1337"))).toEqual(
+				"fs0ciety#1337"
+			)
+		})
+	})
+})

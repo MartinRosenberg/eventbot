@@ -1,27 +1,28 @@
-import dayjs from "dayjs";
-import { EventData } from "./template";
-import advancedFormat from "dayjs/plugin/advancedFormat";
-import timezone from "dayjs/plugin/timezone";
-import { glog } from "./log";
+import dayjs from "dayjs"
+import advancedFormat from "dayjs/plugin/advancedFormat"
+import timezone from "dayjs/plugin/timezone"
 
-dayjs.extend(advancedFormat);
-dayjs.extend(timezone);
+import { glog } from "./log"
+import type { EventData } from "./template"
+
+dayjs.extend(advancedFormat)
+dayjs.extend(timezone)
 
 /** Render dates in a human-readable way, e.g. `Monday, January 1, 2021 at 12:00 PM EST` */
-export const prettyDateFormat = "dddd, MMMM D, YYYY [at] h:mm A z";
+export const prettyDateFormat = "dddd, MMMM D, YYYY [at] h:mm A z"
 
 export const eventPreviewGuide = `
 *Here's your event preview. If everything looks good, hit **Create Event** to add it to the server. Otherwise, you can correct the details or delete this draft.*
 *I understand natural language – you can tell me to "change the date to 7:30 PM on Jan 11" or "change the location to Cheesman Park."*
 ────────────────────────────────────────
-`.trim();
+`.trim()
 
 /** Identifies a field that should be made `null` when parsed from the Discord draft */
-const MISSING_SENTINEL = "*not provided*";
+const MISSING_SENTINEL = "*not provided*"
 /** Matches a `**key**: value` */
-const kvMatcher = /^\*\*([A-Za-z]+):\*\* (.*)$/;
+const kvMatcher = /^\*\*([A-Za-z]+):\*\* (.*)$/
 /** Matches an ISO date wrapped in parens at the end of a pretty-formatted date line */
-const dateMatcher = /[^\(]+\(([^\)]+)\)/;
+const dateMatcher = /[^\(]+\(([^\)]+)\)/
 
 /**
  * Format a date for display in a Discord event draft.
@@ -29,9 +30,11 @@ const dateMatcher = /[^\(]+\(([^\)]+)\)/;
  * @returns The date formatted as a string, pretty format first, ISO format in params
  */
 function formatDate(date: string | null | undefined): string {
-	glog.debug(date);
-	if (!date || date === "" || date === MISSING_SENTINEL) return MISSING_SENTINEL;
-	return `${dayjs(date).format(prettyDateFormat)} (${date})`;
+	glog.debug(date)
+	if (!date || date === "" || date === MISSING_SENTINEL) {
+		return MISSING_SENTINEL
+	}
+	return `${dayjs(date).format(prettyDateFormat)} (${date})`
 }
 
 /**
@@ -40,13 +43,19 @@ function formatDate(date: string | null | undefined): string {
  * @returns The ISO representation of the date
  */
 function parseDate(raw: string): string | null {
-	if (raw === MISSING_SENTINEL) return null;
-	const match = raw.match(dateMatcher);
-	if (!match) return null;
-	glog.info({ match });
-	const date = new Date(match[1]).toISOString();
-	if (!date) return null;
-	return date;
+	if (raw === MISSING_SENTINEL) {
+		return null
+	}
+	const match = raw.match(dateMatcher)
+	if (!match) {
+		return null
+	}
+	glog.info({ match })
+	const date = new Date(match[1]).toISOString()
+	if (!date) {
+		return null
+	}
+	return date
 }
 
 /**
@@ -56,10 +65,10 @@ function parseDate(raw: string): string | null {
  * @returns The formatted event
  */
 export function ppEvent(data: EventData, prefix?: string): string {
-	const d: Record<string, any> = {};
+	const d: Record<string, any> = {}
 	for (const [key, value] of Object.entries(data)) {
-		const k = key as keyof EventData;
-		d[k] = value ?? MISSING_SENTINEL;
+		const k = key as keyof EventData
+		d[k] = value ?? MISSING_SENTINEL
 	}
 	let out = `
 **Name:** ${d.name}
@@ -68,9 +77,11 @@ export function ppEvent(data: EventData, prefix?: string): string {
 **Location:** ${d.location}
 
 ${d.desc}
-	`.trim();
-	if (prefix) out = `${prefix}\n${out}`;
-	return out;
+	`.trim()
+	if (prefix) {
+		out = `${prefix}\n${out}`
+	}
+	return out
 }
 
 /**
@@ -79,29 +90,41 @@ ${d.desc}
  * @returns The parsed event data
  */
 export function parsePPEvent(raw: string): EventData {
-	const data: EventData = { name: null, start: null, end: null, location: null, desc: null };
-	const lines = raw.split("\n");
+	const data: EventData = {
+		name: null,
+		start: null,
+		end: null,
+		location: null,
+		desc: null,
+	}
+	const lines = raw.split("\n")
 	const kvLines = lines
 		.map((line, idx) => ({ line, idx }))
 		.map(({ line, idx }) => ({ match: line.match(kvMatcher), idx }))
 		.filter(({ match }) => match)
-		.map(({ match, idx }) => ({ match: match as RegExpMatchArray, idx }));
+		.map(({ match, idx }) => ({ match: match as RegExpMatchArray, idx }))
 
 	for (const { match } of kvLines) {
-		let [_, key, value] = match;
-		key = key.toLowerCase();
-		if (key === "name") data.name = value;
-		else if (key === "start") data.start = parseDate(value);
-		else if (key === "end") data.end = parseDate(value);
-		else if (key === "location") data.location = value;
-		else glog.warn(`Unknown key when parsing pp event: ${key}`);
+		let [_, key, value] = match
+		key = key.toLowerCase()
+		if (key === "name") {
+			data.name = value
+		} else if (key === "start") {
+			data.start = parseDate(value)
+		} else if (key === "end") {
+			data.end = parseDate(value)
+		} else if (key === "location") {
+			data.location = value
+		} else {
+			glog.warn(`Unknown key when parsing pp event: ${key}`)
+		}
 	}
 
-	const lastKvLineIdx = kvLines[kvLines.length - 1]?.idx;
-	const descLines = lines.slice(lastKvLineIdx + 1);
-	data.desc = descLines.join("\n").trim();
+	const lastKvLineIdx = kvLines[kvLines.length - 1]?.idx
+	const descLines = lines.slice(lastKvLineIdx + 1)
+	data.desc = descLines.join("\n").trim()
 
-	return data;
+	return data
 }
 
 /**
@@ -110,7 +133,7 @@ export function parsePPEvent(raw: string): EventData {
  * @returns A formatted string that can be parsed
  */
 export function auditMessage(userTag: string): string {
-	return `Event creation started by \`${userTag}\``;
+	return `Event creation started by \`${userTag}\``
 }
 
 /**
@@ -119,7 +142,9 @@ export function auditMessage(userTag: string): string {
  * @returns The user tag of the event creator, or null if the message is not an audit message
  */
 export function parseAuditMessage(raw: string): string | null {
-	const match = raw.match(/^Event creation started by `(.+)`/);
-	if (!match) return null;
-	return match[1];
+	const match = raw.match(/^Event creation started by `(.+)`/)
+	if (!match) {
+		return null
+	}
+	return match[1]
 }

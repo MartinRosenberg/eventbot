@@ -1,16 +1,17 @@
-import dayjs from "dayjs";
-import nunjucks from "nunjucks";
-import { z } from "zod";
-import { prettyDateFormat } from "./pretty";
+import dayjs from "dayjs"
+import nunjucks from "nunjucks"
+import { z } from "zod"
+
+import { prettyDateFormat } from "./pretty"
 
 // Load templates from the directory and don't escape output (we're not rendering HTML)
-nunjucks.configure("templates", { autoescape: false });
+nunjucks.configure("templates", { autoescape: false })
 
 /** Build an error schema that produces a pretty error for a missing field */
 const errSchema = (name: string) => ({
 	required_error: `Please provide a ${name} for your event.`,
 	invalid_type_error: `Please provide a valid ${name} for your event.`,
-});
+})
 
 /** The schema for an event's data */
 export const eventDataSchema = z.object({
@@ -19,9 +20,9 @@ export const eventDataSchema = z.object({
 	end: z.string().or(z.null()), // ISO8601
 	location: z.string().or(z.null()),
 	desc: z.string().or(z.null()).or(z.undefined()), // we populate this
-});
+})
 /** The schema for an event's data */
-export type EventData = z.infer<typeof eventDataSchema>;
+export type EventData = z.infer<typeof eventDataSchema>
 
 /** The schema for an event which we can successfully create in Discord */
 export const validEventDataSchema = z.object({
@@ -30,9 +31,9 @@ export const validEventDataSchema = z.object({
 	end: z.string({ ...errSchema("end time") }),
 	desc: z.string({ ...errSchema("description") }),
 	location: z.string().or(z.null()),
-});
+})
 /** The schema for an event which we can successfully create in Discord */
-export type ValidEventData = z.infer<typeof validEventDataSchema>;
+export type ValidEventData = z.infer<typeof validEventDataSchema>
 
 /**
  * Render a template by name with the given arguments.
@@ -40,11 +41,16 @@ export type ValidEventData = z.infer<typeof validEventDataSchema>;
  * @param args The arguments to use when rendering the template
  * @returns The rendered template content
  */
-async function render(name: string, args: Record<string, any>): Promise<string> {
+async function render(
+	name: string,
+	args: Record<string, any>
+): Promise<string> {
 	for (const [key, value] of Object.entries(args)) {
-		if (typeof value === "object") args[key] = JSON.stringify(value);
+		if (typeof value === "object") {
+			args[key] = JSON.stringify(value)
+		}
 	}
-	return nunjucks.render(`${name}.njk`, args);
+	return nunjucks.render(`${name}.njk`, args)
 }
 
 /**
@@ -55,11 +61,11 @@ async function render(name: string, args: Record<string, any>): Promise<string> 
  * @returns The rendered prompt for GPT
  */
 export async function promptCreateEvent(args: {
-	dateWithTZ: string;
-	utcOffset: string;
-	eventInfo: string;
+	dateWithTZ: string
+	utcOffset: string
+	eventInfo: string
 }): Promise<string> {
-	return render("prompt-create-event", args);
+	return render("prompt-create-event", args)
 }
 
 /**
@@ -71,12 +77,12 @@ export async function promptCreateEvent(args: {
  * @returns The rendered prompt for GPT
  */
 export async function promptEditEvent(args: {
-	dateWithTZ: string;
-	utcOffset: string;
-	existingEventData: EventData;
-	updateInfo: string;
+	dateWithTZ: string
+	utcOffset: string
+	existingEventData: EventData
+	updateInfo: string
 }): Promise<string> {
-	return render("prompt-edit-event", args);
+	return render("prompt-edit-event", args)
 }
 
 /**
@@ -88,5 +94,5 @@ export function now() {
 		// TODO: set tz for dayjs using config
 		dateWithTZ: dayjs().format(prettyDateFormat),
 		utcOffset: dayjs().format("Z"),
-	};
+	}
 }
