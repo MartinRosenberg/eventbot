@@ -1,10 +1,11 @@
 {
 	"name": "eventbot",
 	"version": "0.1.0",
-	"description": "",
-	"keywords": [],
 	"license": "MIT",
-	"author": "",
+	"contributors": [
+		"Matt Lewis (https://mplewis.com/)",
+		"Martin Rosenberg (https://martinbrosenberg.com/)"
+	],
 	"main": "src/index.js",
 	"scripts": {
 		"build": "esbuild src/index.ts --bundle --platform=node --sourcemap --external:fsevents --outdir=dist",
