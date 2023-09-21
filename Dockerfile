@@ -1,7 +1,7 @@
-FROM node:18.16.0 as build
+FROM node:18.17.1 as build
 
 WORKDIR /app
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8.7.6
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
@@ -11,17 +11,17 @@ RUN pnpm build
 
 ########################################
 
-FROM node:18.16.0 as deps
+FROM node:18.17.1 as deps
 
 WORKDIR /app
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8.7.6
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
 ########################################
 
-FROM node:18.16.0 as prod
+FROM node:18.17.1 as prod
 
 WORKDIR /app
 COPY --from=build /app/dist ./dist
