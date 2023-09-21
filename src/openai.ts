@@ -2,12 +2,12 @@ import { Configuration, OpenAIApi } from "openai"
 import type { CreateCompletionRequest } from "openai"
 import { ZodType } from "zod"
 
-import { openaiAPIKey } from "./env"
+import { openAIApiKey } from "./env"
 import { glog } from "./log"
 import { eventDataSchema, promptCreateEvent, promptEditEvent } from "./template"
 import type { EventData } from "./template"
 
-const configuration = new Configuration({ apiKey: openaiAPIKey })
+const configuration = new Configuration({ apiKey: openAIApiKey })
 const openai = new OpenAIApi(configuration)
 
 /** The options to use when making a completion request to GPT */
@@ -31,7 +31,7 @@ export type CompletionResult<T> =
  */
 async function complete<T>(
 	validator: ZodType<T>,
-	prompt: string
+	prompt: string,
 ): Promise<CompletionResult<T>> {
 	const log = glog.child({ prompt })
 	log.debug("submitting prompt")
@@ -94,7 +94,7 @@ export async function parseEditEvent(
 ): Promise<CompletionResult<EventData>> {
 	const resp = await complete<EventData>(
 		eventDataSchema,
-		await promptEditEvent(...args)
+		await promptEditEvent(...args),
 	)
 	if ("result" in resp) {
 		const { result } = resp

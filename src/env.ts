@@ -19,7 +19,7 @@ dotenv.config()
 /** The token used to sign in as a Discord bot */
 export const discordBotToken = get("DISCORD_BOT_TOKEN")
 /** The API key used to access the OpenAI API */
-export const openaiAPIKey = get("OPENAI_API_KEY")
+export const openAIApiKey = get("OPENAI_API_KEY")
 /** Display logs at or above this log level */
 export const logLevel = get("LOG_LEVEL", "info")
 /** Listen in this channel only. */
